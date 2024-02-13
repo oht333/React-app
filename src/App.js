@@ -37,18 +37,34 @@ function Article(props){
   </article>
 }
 
+function Create(props){
+  return <article>
+    <h2>Create</h2>
+    <form onSubmit={event=>{
+      event.preventDefault();
+      const title = event.target.title.value;
+      const body = event.target.body.value;
+      props.onCreate(title, body);
+    }}>
+      <p><input type="text" name="title" placeholder="title"/></p>
+      <p><textarea name="body" placeholder="body"></textarea></p>
+      <p><input type="submit" value="Create"></input></p>
+    </form>
+  </article>
+}
+
 function App() {
   // const _mode = useState('WELCOME');
   // const mode = _mode[0];
   // const setMode = _mode[1];  --> 이것을 간단하게 한줄로 요약한게 밑에 작성한 코드이다.
   const [mode, setMode] = useState('WELCOME');
   const [id, setId] = useState(null);
-
-  const topics = [
+  const [nextId, setNextId] = useState(4); //topics의 원소중의 마지막 id가 3이니까 다음에 생성될려는 id가 4가 되야하니까 초기값을 4로 설정한다.
+  const [topics, setTopics] = useState([
     {id:1, title:'html', body:'html is ...'},
     {id:2, title:'css', body:'css is ...'},
     {id:3, title:'javascript', body:'javascript is ...'}
-  ]
+  ]);
   
   let content = null;
   if(mode === 'WELCOME'){
@@ -63,6 +79,16 @@ function App() {
       }
     }
     content = <Article title={title} body={body}></Article>
+  } else if(mode === 'CREATE'){
+    content = <Create onCreate={(_title, _body)=>{
+      const newTopic = {id:nextId, title:_title, body:_body}
+      const newTopics = [...topics] //topics의 복제본을 만들어서 push를 해야 컴포넌트가 다시 실행이 된다.
+      newTopics.push(newTopic);
+      setTopics(newTopics);
+      setMode('READ');
+      setId(nextId);
+      setNextId(nextId+1);  //다음의 글을 추가할 때를 대비해서 기존의 nextId에 1을 더해서 set한다.
+    }}></Create>
   }
   return (
     <div>
@@ -76,6 +102,10 @@ function App() {
         setId(_id);
       }}></Nav>
       {content}
+      <a href="/create" onClick={event=>{
+        event.preventDefault();
+        setMode('CREATE');
+      }}>Create</a>
     </div>
   );
 }
